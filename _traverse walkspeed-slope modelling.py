@@ -280,7 +280,14 @@ def walk_slope_model():
     # set legends for LEFT and RIGHT
     axs0.legend(fontsize=8,loc='upper right',frameon=False)
     axs1.legend(fontsize=8,loc='upper right',frameon=False)
-    # show plot
+
+    axs0.annotate('No. points= '+str(len(_df)),xy=(40,4))
+    axs1.annotate('No. points= '+str(len(_df)),xy=(20,4))
+
+    fig.savefig('_output/slope_modelling.png',
+                dpi=300,
+                bbox_inches = "tight")
+    
     plt.show()
 
 walk_slope_model()

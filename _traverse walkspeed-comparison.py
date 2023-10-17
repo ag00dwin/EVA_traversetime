@@ -53,7 +53,7 @@ for f in csv_files:
         mapgrid_y.append(dem_y[c_index(_df['X'][index],_df['Y'][index])[0]])
         mapgrid_z.append(dem_z[c_index(_df['X'][index],_df['Y'][index])[0]]) 
         mapgrid_error.append(c_index(_df['X'][index],_df['Y'][index])[1])
-        mapgrid_slope.append(slope_z[c_index(t_df['X'][index],_df['Y'][index])[0]]) 
+        mapgrid_slope.append(slope_z[c_index(_df['X'][index],_df['Y'][index])[0]]) 
     _df['mapgrid_x'] = mapgrid_x
     _df['mapgrid_y'] = mapgrid_y
     _df['mapgrid_z'] = mapgrid_z
@@ -63,24 +63,24 @@ for f in csv_files:
     # itterate over every interval in the traverse for dx
     _dx = []
     import geopy.distance
-    for index, row in t_df.iterrows():
+    for index, row in _df.iterrows():
         if index == 0:
             # starting point
             _dx.append(0)
         else:
             try:
-                coords_1 = (t_df['latitude'][index  ], t_df['longitude'][index  ])
-                coords_2 = (t_df['latitude'][index-1], t_df['longitude'][index-1])
+                coords_1 = (_df['latitude'][index  ], _df['longitude'][index  ])
+                coords_2 = (_df['latitude'][index-1], _df['longitude'][index-1])
                 dx = geopy.distance.geodesic(coords_1, coords_2).m
             except:
                 dx = 0
             _dx.append(dx)
 
     # add dx to dataframe
-    t_df['dx'] = _dx 
+    _df['dx'] = _dx 
     # threshold by minimum distance
-    t_df = t_df[t_df['dx']>=5]
-    t_df = t_df.reset_index()
+    _df = _df[_df['dx']>=5]
+    _df = _df.reset_index()
 
     # itterate over every interval in the traverse
     # calculate recorded time for interval and compare to model
@@ -91,50 +91,53 @@ for f in csv_files:
 
     # itterate over every interval in the traverse
     from datetime import datetime
-    for index, row in t_df.iterrows():   
+    for index, row in _df.iterrows():   
         if index == 0:
             # starting point
             true_time.append(0)
             relslope_time.append(0)
             absslope_time.append(0)
         else:
-            elev_1 = (t_df['mapgrid_z'][index  ])
-            elev_2 = (t_df['mapgrid_z'][index-1])
+            elev_1 = (_df['mapgrid_z'][index  ])
+            elev_2 = (_df['mapgrid_z'][index-1])
             dz = elev_2-elev_1
 
-            t1 = t_df['time'][index  ]
-            t2 = t_df['time'][index-1]
+            t1 = _df['time'][index  ]
+            t2 = _df['time'][index-1]
             delta_t = t1 - t2
             true_time.append(delta_t.total_seconds())
             
             # expoential model for relative slope
-            relslope_time.append(t_df['dx'][index]/(((1.90178465*np.exp(-abs(2.4607634)*abs((dz/t_df['dx'][index])))))/3.6)) 
+            relslope_time.append(_df['dx'][index]/(((1.90178465*np.exp(-abs(2.4607634)*abs((dz/_df['dx'][index])))))/3.6)) 
             # polynomial model for absolute slope
-            absslope = np.degrees(np.arctan(dz/t_df['dx'][index]))
-            absslope_time.append(t_df['dx'][index]/((   (-4.437*(10**-5)*(absslope**3))+
+            absslope = np.degrees(np.arctan(dz/_df['dx'][index]))
+            absslope_time.append(_df['dx'][index]/((    (-4.437*(10**-5)*(absslope**3))+
                                                         ( 0.004032*(absslope**2))+
                                                         (-0.1206*(absslope))+
                                                         2.317)/3.6)) 
 
     # update dataframe with time estimates for each interval of traverse
-    t_df['truetime_inva'] = true_time       
-    t_df['relstime_inva'] = relslope_time 
-    t_df['absstime_inva'] = absslope_time  
-    
-    ################
+    _df['truetime_inva'] = true_time       
+    _df['relstime_inva'] = relslope_time 
+    _df['absstime_inva'] = absslope_time  
 
     # remove time intervals greater than 1 min 
-    t_df = t_df[t_df['truetime_inva']<=60]
+    print(len(_df))
+    _df = _df[_df['truetime_inva']<=60]
+    print(len(_df))
 
-    t_df['truetime'] = np.cumsum(t_df['truetime_inva'].values,axis=0) 
-    t_df['relstime'] = np.cumsum(t_df['relstime_inva'].values,axis=0) 
-    t_df['absstime'] = np.cumsum(t_df['absstime_inva'].values,axis=0) 
+    _df['truetime'] = np.cumsum(_df['truetime_inva'].values,axis=0) 
+    _df['relstime'] = np.cumsum(_df['relstime_inva'].values,axis=0) 
+    _df['absstime'] = np.cumsum(_df['absstime_inva'].values,axis=0) 
 
-    t_df['distance'] = np.cumsum(t_df['dx'].values,axis=0)  
+    _df['distance'] = np.cumsum(_df['dx'].values,axis=0)  
 
     fig, ax = plt.subplots(figsize=(12.5, 6))
-    ax.plot(t_df['distance'].values,t_df['truetime'].values,label='actual time')
-    ax.plot(t_df['distance'].values,t_df['relstime'].values,label='rel slope time')
-    ax.plot(t_df['distance'].values,t_df['absstime'].values,label='abs slope time')
+
+    ax.plot(_df['distance'].values,_df['truetime'].values,label='actual time')
+    ax.plot(_df['distance'].values,_df['relstime'].values,label='rel slope time')
+    ax.plot(_df['distance'].values,_df['absstime'].values,label='abs slope time')
+
     plt.legend()
     plt.show()
+
