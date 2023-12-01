@@ -7,6 +7,10 @@ import pandas as pd
 import os
 import glob
 
+
+import warnings
+warnings.filterwarnings("ignore")
+
 # import elevation map as csv
 dem_file = '_raster/_lunga_DEM.csv'
 dem = pd.read_csv(dem_file,sep=',')
@@ -55,9 +59,10 @@ def walk_slope_model():
     csv_files = glob.glob(os.path.join('_data', "*.csv"))
 
     for f in csv_files:
-        print(f)
+        #print(f)
         # resample data to one minute intervals
         _df = pd.read_csv(f,sep=',', parse_dates=['time'])
+
         _df = _df.resample('1Min',on='time').mean()
         _df = _df.reset_index()
         # interpolate (default: linear)
@@ -85,6 +90,7 @@ def walk_slope_model():
         # for each interval in the traverse calaculate properties
         import geopy.distance
         dx_ = [] # delta distance
+        dxa_= [] # detla distance (actual with slope)
         dz_ = [] # detla elevation
         dt_ = [] # slope angle
         dat_= [] # absolute slope angle
@@ -95,6 +101,7 @@ def walk_slope_model():
             if index == 0:
                 # starting point
                 dx_.append(0)
+                dxa_.append(0)
                 dz_.append(0)
                 dt_.append(0)
                 dat_.append(0)
@@ -107,9 +114,6 @@ def walk_slope_model():
                 except:
                     dx = 0
 
-                dx_.append(dx) 
-                ds_.append(dx/16.667)
-
                 elev_1 = (_df['mapgrid_z'][index  ])
                 elev_2 = (_df['mapgrid_z'][index-1])
                 
@@ -118,17 +122,42 @@ def walk_slope_model():
                 dt_.append(np.degrees(np.arctan(dz/dx)))
                 dat_.append(_df['mapgrid_slope'][index])
 
+                # actual distance
+                if dz>0:
+                    theta = abs(np.arctan(dz/dx))
+                    dxa = dx/(np.cos(theta)) 
+                else:
+                    dxa = dx
+
+                dx_.append(dx) 
+                dxa_.append(dxa)
+                ds_.append(dxa/16.667)
+
         # update dataframe with new properties for each interval of traverse
         _df['dx']     = dx_           # delta distance
-        _df['dx_cum'] = np.cumsum(dx_)# cumulative distance
+        _df['dxa']    = dxa_          # delta distance (actual with slope)
+        _df['dx_cum'] = np.cumsum(dxa_) # cumulative distance (actual with slope)
         _df['dz']     = dz_           # delta elevation
         _df['dt']     = dt_           # relative slope 
         _df['dat']    = dat_          # absolute slope angle
-        _df['ds']     = ds_           # speed
+        _df['ds']     = ds_           # speed (with actual distance)
 
+        # stats for traverse 
+        #print(f+' | traverse length = '+str(np.max(_df['dx_cum'])))
         # threshold by minimum distance
+        # print stats of threshold
+        _df_movement    = _df[_df['dxa']>=5]
+        _df_stationary  = _df[_df['dxa']<5]
+        #print(f+' | points | time of traverse: '+str(len(_df[_df['dxa']>=0])))
+        #print(f+' | points | stationary: '+str(len(_df_stationary))+'| movement: '+str(len(_df_movement)))
+        percentage_movement = round((len(_df_movement)/len(_df[_df['dxa']>=0]))*100,3)
+        percentage_stationary = round((len(_df_stationary)/len(_df[_df['dxa']>=0]))*100,3)
+        #print(f+' | movement% = '+str(round(percentage_movement,2))+'| stationary% = '+str(round(percentage_stationary,2)))
+        print('GPSday','length(m)','time(mins)','time_still(mins)','time_still(%)','time_move(mins)','time_move(%)')
+        print(f,str(round(np.max(_df['dx_cum']),2)),str(len(_df[_df['dxa']>=0])),str(len(_df_stationary)),percentage_stationary,str(len(_df_movement)),percentage_movement)
+        
         # define minimum distance as cellsize in dem/slope raster
-        _df = _df[_df['dx']>=5]
+        _df = _df[_df['dxa']>=5]
         _df.dropna()
 
         # append traverse properties to master lists
@@ -203,7 +232,8 @@ def walk_slope_model():
     from sympy import Symbol,expand
     model = np.poly1d(np.polyfit(all_absslope, all_speed, 3))
     print(model)
-    axs0.plot(np.arange(0,90,2), model(np.arange(0,90,2)), 'Orange')
+    axs0.plot(np.arange(0,90,2), model(np.arange(0,90,2)), 'Orange',
+                    label = 'best fit: a=%5.6f, b=%5.6f, c=%5.6f, d=%5.6f' % tuple(model))
 
     # plot RIGHT
     axs1.scatter(all_slope,all_speed)

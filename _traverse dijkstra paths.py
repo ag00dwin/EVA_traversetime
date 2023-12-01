@@ -50,8 +50,9 @@ def dijkstra_lunga(start_relcoord,end_relcoord):
                         if np.degrees(np.arctan(rel_slope)) > 20:
                             dist_to_new_point = 100000000
                         else:   
-                            extra_weight = (-4.437*(10**-5)*(abs_slope**3))+(0.004032*(abs_slope**2))-(0.1206*abs_slope)+2.317
-                            extra_weight = 2.317 - extra_weight + 1
+                            #extra_weight = (-4.437*(10**-5)*(abs_slope**3))+(0.004032*(abs_slope**2))-(0.1206*abs_slope)+2.317
+                            #extra_weight = 2.317 - extra_weight + 1
+                            extra_weight = 1
 
                             time_to_new_point = (5/((2.2370775*np.exp(-3.5*abs((rel_slope)-0.00923238)))/3.6))/60
                             dist_to_new_point = time_to_new_point * extra_weight
@@ -176,6 +177,7 @@ def dijkstra_lunga(start_relcoord,end_relcoord):
 
 lowerleft = (169455,706855)
 
+# DAY 9
 # convert cooridinates into local raster coordinate 
 _start  = [170054 , 708814] # EASTING | NORTHING
 
@@ -204,4 +206,32 @@ dijkstra_lunga( (int((Z5_L1 [1] - 2.5 - lowerleft[1])/5), int((Z5_L1 [0] - 2.5 -
                 (int((_start[1] - 2.5 - lowerleft[1])/5), int((_start[0] - 2.5 - lowerleft[0])/5))  )
 
 
+'''
+# DAY 5
+# convert cooridinates into local raster coordinate 
+_start  = [170054 , 708814] # EASTING | NORTHING
 
+Z5_L1 = [171072 , 708671] # EASTING | NORTHING
+Z5_L2 = [171047 , 708320] # EASTING | NORTHING
+Z5_L3 = [170747 , 708201] # EASTING | NORTHING
+Z5_L4 = [170756 , 708127] # EASTING | NORTHING
+Z5_L5 = [170758 , 707990] # EASTING | NORTHING
+
+dijkstra_lunga( (int((_start[1] - 2.5 - lowerleft[1])/5), int((_start[0] - 2.5 - lowerleft[0])/5)),
+                (int((Z5_L1 [1] - 2.5 - lowerleft[1])/5), int((Z5_L1 [0] - 2.5 - lowerleft[0])/5))  )
+
+dijkstra_lunga( (int((Z5_L1 [1] - 2.5 - lowerleft[1])/5), int((Z5_L1 [0] - 2.5 - lowerleft[0])/5)),
+                (int((Z5_L2 [1] - 2.5 - lowerleft[1])/5), int((Z5_L2 [0] - 2.5 - lowerleft[0])/5))  )
+
+dijkstra_lunga( (int((Z5_L2 [1] - 2.5 - lowerleft[1])/5), int((Z5_L2 [0] - 2.5 - lowerleft[0])/5)),
+                (int((Z5_L3 [1] - 2.5 - lowerleft[1])/5), int((Z5_L3 [0] - 2.5 - lowerleft[0])/5))  )
+
+dijkstra_lunga( (int((Z5_L3 [1] - 2.5 - lowerleft[1])/5), int((Z5_L3 [0] - 2.5 - lowerleft[0])/5)),
+                (int((Z5_L4 [1] - 2.5 - lowerleft[1])/5), int((Z5_L4 [0] - 2.5 - lowerleft[0])/5))  )
+
+dijkstra_lunga( (int((Z5_L4 [1] - 2.5 - lowerleft[1])/5), int((Z5_L4 [0] - 2.5 - lowerleft[0])/5)),
+                (int((Z5_L5 [1] - 2.5 - lowerleft[1])/5), int((Z5_L5 [0] - 2.5 - lowerleft[0])/5))  )
+
+dijkstra_lunga( (int((Z5_L5 [1] - 2.5 - lowerleft[1])/5), int((Z5_L5 [0] - 2.5 - lowerleft[0])/5)),
+                (int((_start[1] - 2.5 - lowerleft[1])/5), int((_start[0] - 2.5 - lowerleft[0])/5))  )
+'''
