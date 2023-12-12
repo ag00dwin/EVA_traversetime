@@ -29,4 +29,4 @@ Calculates relative slope and absolate slope for intervals of the GPS tracks and
 **_traverse dijkstra paths.py** 
 Runs a path finding algorithm from relative slope walking model (from ``_traverse walkspeed-slope modelling``) and uses this to calculate the most efficent paths from A to B on the island DEM. Outputs the path itself as well as a heatmap for time to reach all accessible grid pixels on the DEM. 
 
-<img src="https://github.com/ag00dwin/EVA_traversetime/blob/main/_output/da_map_(362%2C%20322)contour.png" width="400">
+<img src="https://github.com/ag00dwin/EVA_traversetime/blob/main/_output/da_map_(100%2C%20371)_plot%20annotations.png" width="400">
