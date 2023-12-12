@@ -1,13 +1,32 @@
 # EVA_traversetime
 
-_activity stop modelling : 
-Uses a speed threshold and cluster anlalysis in X/Y/time to locate within the GPS tracks when breaks were taken. Calculates a historgram of the length of time of each break. 
+## Context
+Meili-I was the first analogue  mission by [Space Health Research](https://spacehealthresearch.com/). (SHR) and represents the UK’s first high-fidelity analogue astronaut crewed mission. The Geological Surveys of Impact Regions (GSIR) study of Meili-I facilitated the testing of important logistical considerations for planetary exploration completed during Extravehicular Activity (EVA). 
 
-_traverse walkspeed-slope modelling: 
-Calculates relative slope and absolate slope for intervals of the GPS tracks and plots as historgram. Fits functions to relative and absolate slope to model walking speed. 
+This repository stores Python code used to process GPS tracks collected using the smartphone application [Avenza](https://www.avenza.com/avenza-maps/).
 
-_traverse walkspeed_slope model-comparison:
-Applies the walking speed models (from _traverse walkspeed-slope modelling) for relative and absolute slopes and compares to actual GPS data to asses (visual comparison) the goodness of the fit. 
+## Referencing
+If using this code, please reference: ???
 
-_traverse dijkstra paths:
-Runs a path finding algorithm from relative slope walking model (from _traverse walkspeed-slope modelling) and uses this to calculate the most efficent paths from A to B on the island DEM. Outputs the path itself as well as a heatmap for time to reach all accessible grid pixels on the DEM.
+## License
+The project is licensed under the GNU-v3 license.
+
+## Installation 
+No installation is required. Scripts are short and designed to be adapted and applied to various problems. Python scripts can be downloaded from this repository and intergrated into pre-existing scripts where such functionality is required.
+
+## Python Scripts
+
+**_activity stop modelling.py** 
+Uses a traverse speed threshold and cluster anlalysis in XYtime to locate within the GPS tracks when breaks were taken. Calculates a historgram of the length of time of each break. 
+
+<img src="https://github.com/ag00dwin/EVA_traversetime/tree/main/_output/_activity stop modelling_hist.png" width="200">
+
+**_traverse walkspeed-slope modelling.py** 
+Calculates relative slope and absolate slope for intervals of the GPS tracks and plots this as historgram. Fits functions to relative and absolate slope to model walking speed. 
+
+<img src="https://github.com/ag00dwin/EVA_traversetime/tree/main/_output/_traverse walkspeed-slope modelling_plot.png" width="200">
+
+**_traverse dijkstra paths.py** 
+Runs a path finding algorithm from relative slope walking model (from ``_traverse walkspeed-slope modelling``) and uses this to calculate the most efficent paths from A to B on the island DEM. Outputs the path itself as well as a heatmap for time to reach all accessible grid pixels on the DEM. 
+
+<img src="https://github.com/ag00dwin/EVA_traversetime/tree/main/_output/da_map_(362, 322)contour.png" width="200">

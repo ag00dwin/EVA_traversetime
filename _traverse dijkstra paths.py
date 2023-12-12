@@ -1,18 +1,19 @@
-# adapted from blog post by Jude Capachietti
-# https://judecapachietti.medium.com/dijkstras-algorithm-for-adjacency-matrix-in-python-a0966d7093e8
-
 import heapq
+
 import pandas as pd
 import numpy as np
-from PIL import Image
 import seaborn as sns
-from scipy import ndimage
 
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm, Normalize
 from matplotlib.ticker import MaxNLocator
 
-def dijkstra_lunga(start_relcoord,end_relcoord):
+from scipy import ndimage
+from PIL import Image
+
+# adapted from blog post by Jude Capachietti
+# https://judecapachietti.medium.com/dijkstras-algorithm-for-adjacency-matrix-in-python-a0966d7093e8
+def dijkstra_eva(start_relcoord,end_relcoord):
 
     def find_shortest_paths(graph, start_point, slopemap):
         # initialize graphs to track if a point is visited
@@ -69,20 +70,20 @@ def dijkstra_lunga(start_relcoord,end_relcoord):
         return distance, prev_point
 
     # import elevation map as tif
-    dem_file = '_raster/_Lunga_DEM.tif'
-    lunga = Image.open(dem_file)
-    lunga = np.array(lunga)
+    dem_file = '_raster/_expzone_DEM.tif'
+    expzone = Image.open(dem_file)
+    expzone = np.array(expzone)
     # set all elevations <1.5 as sea
-    lunga = np.where(lunga < 1.5, 0, lunga)
-    lunga = lunga[::-1,]
+    expzone = np.where(expzone < 1.5, 0, expzone)
+    expzone = expzone[::-1,]
 
     # import sloope map as tif
-    slope_file = '_raster/_Lunga_SLOPE.tif'
+    slope_file = '_raster/_expzone_SLOPE.tif'
     l_slope = Image.open(slope_file)
     l_slope = np.array(l_slope)
 
     # calculate time map to traverse to raster pixels from starting location
-    distance, prev_point = find_shortest_paths(lunga, start_relcoord, l_slope) #Y THEN X
+    distance, prev_point = find_shortest_paths(expzone, start_relcoord, l_slope) #Y THEN X
     distance = np.array(distance)
     distance = np.where(distance>240,np.nan,distance)
     # create dataframe from calculated time map
@@ -175,63 +176,34 @@ def dijkstra_lunga(start_relcoord,end_relcoord):
     
     return
 
+# define axes to match topography raster
 lowerleft = (169455,706855)
 
 # DAY 9
 # convert cooridinates into local raster coordinate 
-_start  = [170054 , 708814] # EASTING | NORTHING
-
+# basecamp
+start  = [170054 , 708814] # EASTING | NORTHING
+# geology localities to visit
 Z7_L1 = [171110 , 707572] # EASTING | NORTHING
 Z7_L2 = [171317 , 707358] # EASTING | NORTHING
 Z7_L3 = [171199 , 707626] # EASTING | NORTHING
 Z5_L2 = [171047 , 708320] # EASTING | NORTHING
 Z5_L1 = [171072 , 708671] # EASTING | NORTHING
 
-dijkstra_lunga( (int((_start[1] - 2.5 - lowerleft[1])/5), int((_start[0] - 2.5 - lowerleft[0])/5)),
+dijkstra_eva(   (int((start[1] - 2.5 - lowerleft[1])/5),  int((start[0] - 2.5 - lowerleft[0])/5)),
                 (int((Z7_L1 [1] - 2.5 - lowerleft[1])/5), int((Z7_L1 [0] - 2.5 - lowerleft[0])/5))  )
 
-dijkstra_lunga( (int((Z7_L1 [1] - 2.5 - lowerleft[1])/5), int((Z7_L1 [0] - 2.5 - lowerleft[0])/5)),
+dijkstra_eva(   (int((Z7_L1 [1] - 2.5 - lowerleft[1])/5), int((Z7_L1 [0] - 2.5 - lowerleft[0])/5)),
                 (int((Z7_L2 [1] - 2.5 - lowerleft[1])/5), int((Z7_L2 [0] - 2.5 - lowerleft[0])/5))  )
 
-dijkstra_lunga( (int((Z7_L2 [1] - 2.5 - lowerleft[1])/5), int((Z7_L2 [0] - 2.5 - lowerleft[0])/5)),
+dijkstra_eva(   (int((Z7_L2 [1] - 2.5 - lowerleft[1])/5), int((Z7_L2 [0] - 2.5 - lowerleft[0])/5)),
                 (int((Z7_L3 [1] - 2.5 - lowerleft[1])/5), int((Z7_L3 [0] - 2.5 - lowerleft[0])/5))  )
 
-dijkstra_lunga( (int((Z7_L3 [1] - 2.5 - lowerleft[1])/5), int((Z7_L3 [0] - 2.5 - lowerleft[0])/5)),
+dijkstra_eva(   (int((Z7_L3 [1] - 2.5 - lowerleft[1])/5), int((Z7_L3 [0] - 2.5 - lowerleft[0])/5)),
                 (int((Z5_L2 [1] - 2.5 - lowerleft[1])/5), int((Z5_L2 [0] - 2.5 - lowerleft[0])/5))  )
 
-dijkstra_lunga( (int((Z5_L2 [1] - 2.5 - lowerleft[1])/5), int((Z5_L2 [0] - 2.5 - lowerleft[0])/5)),
+dijkstra_eva(   (int((Z5_L2 [1] - 2.5 - lowerleft[1])/5), int((Z5_L2 [0] - 2.5 - lowerleft[0])/5)),
                 (int((Z5_L1 [1] - 2.5 - lowerleft[1])/5), int((Z5_L1 [0] - 2.5 - lowerleft[0])/5))  )
 
-dijkstra_lunga( (int((Z5_L1 [1] - 2.5 - lowerleft[1])/5), int((Z5_L1 [0] - 2.5 - lowerleft[0])/5)),
-                (int((_start[1] - 2.5 - lowerleft[1])/5), int((_start[0] - 2.5 - lowerleft[0])/5))  )
-
-
-'''
-# DAY 5
-# convert cooridinates into local raster coordinate 
-_start  = [170054 , 708814] # EASTING | NORTHING
-
-Z5_L1 = [171072 , 708671] # EASTING | NORTHING
-Z5_L2 = [171047 , 708320] # EASTING | NORTHING
-Z5_L3 = [170747 , 708201] # EASTING | NORTHING
-Z5_L4 = [170756 , 708127] # EASTING | NORTHING
-Z5_L5 = [170758 , 707990] # EASTING | NORTHING
-
-dijkstra_lunga( (int((_start[1] - 2.5 - lowerleft[1])/5), int((_start[0] - 2.5 - lowerleft[0])/5)),
-                (int((Z5_L1 [1] - 2.5 - lowerleft[1])/5), int((Z5_L1 [0] - 2.5 - lowerleft[0])/5))  )
-
-dijkstra_lunga( (int((Z5_L1 [1] - 2.5 - lowerleft[1])/5), int((Z5_L1 [0] - 2.5 - lowerleft[0])/5)),
-                (int((Z5_L2 [1] - 2.5 - lowerleft[1])/5), int((Z5_L2 [0] - 2.5 - lowerleft[0])/5))  )
-
-dijkstra_lunga( (int((Z5_L2 [1] - 2.5 - lowerleft[1])/5), int((Z5_L2 [0] - 2.5 - lowerleft[0])/5)),
-                (int((Z5_L3 [1] - 2.5 - lowerleft[1])/5), int((Z5_L3 [0] - 2.5 - lowerleft[0])/5))  )
-
-dijkstra_lunga( (int((Z5_L3 [1] - 2.5 - lowerleft[1])/5), int((Z5_L3 [0] - 2.5 - lowerleft[0])/5)),
-                (int((Z5_L4 [1] - 2.5 - lowerleft[1])/5), int((Z5_L4 [0] - 2.5 - lowerleft[0])/5))  )
-
-dijkstra_lunga( (int((Z5_L4 [1] - 2.5 - lowerleft[1])/5), int((Z5_L4 [0] - 2.5 - lowerleft[0])/5)),
-                (int((Z5_L5 [1] - 2.5 - lowerleft[1])/5), int((Z5_L5 [0] - 2.5 - lowerleft[0])/5))  )
-
-dijkstra_lunga( (int((Z5_L5 [1] - 2.5 - lowerleft[1])/5), int((Z5_L5 [0] - 2.5 - lowerleft[0])/5)),
-                (int((_start[1] - 2.5 - lowerleft[1])/5), int((_start[0] - 2.5 - lowerleft[0])/5))  )
-'''
+dijkstra_eva(   (int((Z5_L1 [1] - 2.5 - lowerleft[1])/5), int((Z5_L1 [0] - 2.5 - lowerleft[0])/5)),
+                (int((start[1] - 2.5 - lowerleft[1])/5), int((start[0] - 2.5 - lowerleft[0])/5))  )

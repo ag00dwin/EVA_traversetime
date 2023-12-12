@@ -1,18 +1,12 @@
-import numpy as np
-import pandas as pd
-
-import matplotlib.pyplot as plt
-
-import pandas as pd
 import os
 import glob
 
-
-import warnings
-warnings.filterwarnings("ignore")
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
 
 # import elevation map as csv
-dem_file = '_raster/_lunga_DEM.csv'
+dem_file = '_raster/_expzone_DEM.csv'
 dem = pd.read_csv(dem_file,sep=',')
 # define array variables from DEM
 dem_z = dem['VALUE'].values
@@ -20,7 +14,7 @@ dem_x = dem['X'].values
 dem_y = dem['Y'].values
 
 # import slope map as csv 
-slope_file = '_raster/_lunga_SLOPE.csv'
+slope_file = '_raster/_expzone_SLOPE.csv'
 slope = pd.read_csv(slope_file,sep=',')
 # define array variables from SLOPE
 slope_z = slope['VALUE'].values
@@ -59,7 +53,6 @@ def walk_slope_model():
     csv_files = glob.glob(os.path.join('_data', "*.csv"))
 
     for f in csv_files:
-        #print(f)
         # resample data to one minute intervals
         _df = pd.read_csv(f,sep=',', parse_dates=['time'])
 
@@ -321,5 +314,4 @@ def walk_slope_model():
     plt.show()
 
 walk_slope_model()
-
 exit()
