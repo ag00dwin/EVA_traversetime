@@ -27,6 +27,6 @@ Calculates relative slope and absolate slope for intervals of the GPS tracks and
 <img src="https://github.com/ag00dwin/EVA_traversetime/blob/main/_output/_traverse%20walkspeed-slope%20modelling_plot.png" width="400">
 
 **_traverse dijkstra paths.py** 
-Runs a path-finding algorithm from the relative slope exponential walking model (from ``_traverse walkspeed-slope modelling``) based upon [Toblers Hiking function](https://en.wikipedia.org/wiki/Tobler%27s_hiking_function), and uses this to calculate the most efficent paths from A to B on the island DEM. Outputs the path itself as a .csv file, as well as a heatmap (with or without contours) for time to reach all accessible grid pixels on the DEM. 
+Runs a path-finding algorithm from the relative slope exponential walking model (from ``_traverse walkspeed-slope modelling``) based upon [Toblers Hiking function](https://en.wikipedia.org/wiki/Tobler%27s_hiking_function), and uses this to calculate the most efficent paths from A to B on the island Digital Elevation Model (DEM). Outputs the path itself as a .csv file, as well as a heatmap (with or without contours) for time to reach all accessible grid pixels on the DEM. The code used for dijkstra’s algorithm upon an adjacency matrix (the DEM raster) is from an [article](https://judecapachietti.medium.com/dijkstras-algorithm-for-adjacency-matrix-in-python-a0966d7093e8) by Jude Capachietti. 
 
 <img src="https://github.com/ag00dwin/EVA_traversetime/blob/main/_output/da_map_(100%2C%20371)_plot%20annotations.png" width="400">
