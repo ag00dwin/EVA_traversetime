@@ -102,7 +102,7 @@ def stop_finder():
         
         plt.scatter(_df['X'],_df['Y'],c=_df['groupings'])
         plt.colorbar()
-        #plt.show()
+        plt.show()
     
         # itterate over every group
         # find stop time for every group
