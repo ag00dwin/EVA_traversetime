@@ -13,7 +13,7 @@ from PIL import Image
 
 # adapted from blog post by Jude Capachietti
 # https://judecapachietti.medium.com/dijkstras-algorithm-for-adjacency-matrix-in-python-a0966d7093e8
-def dijkstra_eva(start_coord,end_coord,location):
+def dijkstra_traverse(start_coord,end_coord,location):
 
     # reset tif raster coordinates into OS coordinates
     lowerleft = (169455,706855)
@@ -25,8 +25,8 @@ def dijkstra_eva(start_coord,end_coord,location):
         # current calculated distance from start to point
         # and previous point taken to get to current point
         visited = [[False for col in row] for row in graph]
-        distance = [[float('inf') for col in row] for row in graph]
-        distance[start_point[0]][start_point[1]] = 0
+        time = [[float('inf') for col in row] for row in graph]
+        time[start_point[0]][start_point[1]] = 0
 
         time = [[float('inf') for col in row] for row in graph]
         time[start_point[0]][start_point[1]] = 0
@@ -37,59 +37,61 @@ def dijkstra_eva(start_coord,end_coord,location):
         directions = [(0, 1), (1, 0), (-1, 0), (0, -1)]
         min_heap = []
 
-        heapq.heappush(min_heap, (distance[start_point[0]][start_point[1]], start_point[0], start_point[1]))
+        heapq.heappush(min_heap, (time[start_point[0]][start_point[1]], start_point[0], start_point[1]))
 
         while visited_count < number_of_points:
             current_point = heapq.heappop(min_heap)
-            distance_from_start, row, col = current_point
+            time_from_start, row, col = current_point
             for direction in directions:
                 new_row, new_col = row + direction[0], col + direction[1]
                 if -1 < new_row < n and -1 < new_col < m and not visited[new_row][new_col]:
-                    # distance is a weight of time generated from hiking function
+                    # weighted to time estimated from generalised THF
                     if graph[row][col] < 1.5:
-                        dist_to_new_point = 1000000000000000000
+                        # make areas of sea surrounding the study area impassable 
+                        time_to_new_point = 1000000000000000000
                     else:
                         rel_slope =(graph[row][col]-graph[new_row][new_col])/5
 
-                        if abs(graph[row][col]-graph[new_row][new_col]) > 1.82: # much be <20 degree slope                            
-                            dist_to_new_point = 1000000000000000000
+                        if abs(graph[row][col]-graph[new_row][new_col]) > 1.82:                     
+                            time_to_new_point = 1000000000000000000
+                            # make >20 degree slope impassable        
                         else:   
-                            # application of hiking function
-                            a = 1.58
-                            b = -3.04
-                            c = 0
-                            dist_to_new_point = (5/(a*np.exp(b*abs((rel_slope)-c))))/60
-                            dist_to_new_point = distance_from_start + dist_to_new_point
-
-                    if dist_to_new_point < distance[new_row][new_col]:
-                        distance[new_row][new_col] = dist_to_new_point
+                            # application of generalised Tobler's Hiking Function (THF)
+                            # set parameters
+                            a =  2.34
+                            b =  1.00
+                            c = -0.01
+                            time_to_new_point = 0.005/((a*np.exp(-b*abs((rel_slope)-c)))/60)
+                            time_to_new_point = time_from_start + time_to_new_point
+                    if time_to_new_point < time[new_row][new_col]:
+                        time[new_row][new_col] = time_to_new_point
                         prev_point[new_row][new_col] = (row, col)
-                        heapq.heappush(min_heap, (dist_to_new_point, new_row, new_col))
+                        heapq.heappush(min_heap, (time_to_new_point, new_row, new_col))
             visited[row][col] = True
             visited_count += 1
 
-        return distance, prev_point
+        return time, prev_point
 
     # import elevation map as tif
     dem_file = '_raster/_expzone_DEM.tif'
     expzone = Image.open(dem_file)
     expzone = np.array(expzone)
-    # set all elevations <1.5 as sea
+    # set all elevations <1.5 as sea 
     expzone = np.where(expzone < 1.5, 0, expzone)
     expzone = expzone[::-1,]
 
     # calculate time map to traverse to raster pixels from starting location
-    distance, prev_point = find_shortest_paths(expzone, start_relcoord)
-    distance = np.array(distance)
-    distance = np.where(distance>240,np.nan,distance)
+    time, prev_point = find_shortest_paths(expzone, start_relcoord)
+    time = np.array(time)
+    time = np.where(time>240,np.nan,time)
     # create dataframe from calculated time map
     _x = []
     _y = []
     _t = []
-    for iy, ix in np.ndindex(distance.shape):
+    for iy, ix in np.ndindex(time.shape):
         _x.append(int(ix))
         _y.append(int(iy))
-        _t.append(distance[int(iy)][int(ix)])
+        _t.append(time[int(iy)][int(ix)])
     df = pd.DataFrame.from_dict(np.array([_x,_y,_t]).T)
     df.columns = ['X_value','Y_value','Z_value']
     df['X_value'] = pd.to_numeric(df['X_value'])
@@ -125,7 +127,7 @@ def dijkstra_eva(start_coord,end_coord,location):
     ax = sns.heatmap(pivotted,cmap="viridis",ax=ax)
     # prepare and plot contours
     levels = np.arange(0, 240, 10)
-    smooth_scale = 20
+    smooth_scale = 10
     import skimage.transform as st 
     new_size = tuple([smooth_scale*x for x in (pivotted.to_numpy()).shape])
     z = st.rescale(pivotted.to_numpy(), smooth_scale, mode='constant')
@@ -134,7 +136,7 @@ def dijkstra_eva(start_coord,end_coord,location):
                     z, levels=levels, 
                     colors='yellow',
                     linewidths=0.5)
-    ax.clabel(cntr, inline=True, fontsize=8)
+    ax.clabel(cntr, inline=True, fontsize=5,inline_spacing=0)
     # set axes
     ax.invert_yaxis()
     ax.set_aspect('equal')
@@ -144,7 +146,9 @@ def dijkstra_eva(start_coord,end_coord,location):
     fig.savefig(location+str(start_coord)+'_contour.png',
                     dpi=300,
                     bbox_inches = "tight")
-
+    fig.savefig(location+str(start_coord)+'_contour.pdf',
+                    dpi=300,
+                    bbox_inches = "tight")
     # derive shortest path between coordinates 
     def find_shortest_route(prev_point_graph, end_point):
         shortest_path = []
@@ -160,7 +164,7 @@ def dijkstra_eva(start_coord,end_coord,location):
     path_y = []
     path_t = []
     for py, px in find_shortest_route(prev_point, end_relcoord):
-        path_t.append(distance[py,px])
+        path_t.append(time[py,px])
         path_x.append(((px*5)+lowerleft[0])+2.5)
         path_y.append(((py*5)+lowerleft[1])+2.5)
     path_t = np.array(path_t) ###
@@ -177,7 +181,7 @@ lowerleft = (169455,706855)
 start     = [170054 , 708814] #EASTING, NORTHING
 stationA  = [170702 , 707463] #EASTING, NORTHING
 
-dijkstra_eva((170054,708814),(170702,707463),'_output/_anisotropic mapping/')
+dijkstra_traverse((170054,708814),(170702,707463),'_output/')
 
 exit()
 

@@ -13,17 +13,17 @@ dem_z = dem['VALUE'].values
 dem_x = dem['X'].values
 dem_y = dem['Y'].values
 
-# import slope (gradient) map as csv 
+# import gradient map as csv 
 slope_file = '_raster/_expzone_SLOPE.csv'
 slope = pd.read_csv(slope_file,sep=',')
-# define array variables from SLOPE (gradient)
+# define array variables from gradient
 slope_z = slope['VALUE'].values
 slope_x = slope['X'].values
 slope_y = slope['Y'].values
 
-# create list of coorinate pairs from dem
+# create list of coorinate pairs from DEM
 amap_coordinates = np.array(list(zip(dem_x,dem_y)))
-# create function to match coorindates to closest coorindates in slope/dem
+# create function to match coorindates to closest coorindates in DEM
 def c_index(X,Y):
     distances = np.linalg.norm(amap_coordinates-np.array((X,Y)), axis=1)
     min_index = np.argmin(distances)
@@ -34,7 +34,7 @@ def c_index(X,Y):
 # https://en.wikipedia.org/wiki/Tobler%27s_hiking_function
 def walkspeed(dz,dx):
     # dz = elevation difference
-    # dx = distance
+    # dx = straight-line distance
     W = (6*np.exp(-3.5*abs((dz/dx)+0.05)))*(3/5)
     S = np.degrees(np.arctan(dz/dx))
     return W, S
@@ -42,7 +42,7 @@ def walkspeed(dz,dx):
 # run model to: 
 # (1) fit general hiking function to slope
 # (2) fit polynomial to gradient
-# works for a specific interval which data is resampled to
+# works for a specific interval which data is downsampled and interpolated (avg) to
 def walk_slope_model(ouput_folder,time_interval):
 
     # define cumulative sum variables
@@ -142,64 +142,10 @@ def walk_slope_model(ouput_folder,time_interval):
     all_gradient    = np.nan_to_num(all_gradient)
 
     # define plot space
-    fig = plt.figure(figsize=(12.5, 6))
-    grid = plt.GridSpec(1, 6, hspace=0.4, wspace=1.5)
-    axs0 = fig.add_subplot(grid[0:1, 0:3])
-    axs1 = fig.add_subplot(grid[0:1, 3:6])
+    fig = plt.figure(figsize=(6.25, 6))
+    axs1 = fig.add_subplot()
 
-    # plot LEFT
-    axs0.scatter(all_gradient,all_speed)
-    # turn all values into histogram
-    speed_per_absdegree        = []
-    speed_per_absdegree_std    = []
-    degree_absnum = []
-    for asl in np.arange(0,30,1):
-        # create bounds for each histogram bar
-        sl_lower = asl
-        sl_upper = asl+1
-        # itterate over master values and assign to historgram bar
-        degree_absvalues = []
-        _speed = all_speed
-        for index, value in enumerate(all_gradient):
-            if sl_lower <= value < sl_upper:
-                degree_absvalues.append    (_speed[index])
-        if not degree_absvalues:
-            degree_absnum.append           (0)
-            speed_per_absdegree.append     (0)
-            speed_per_absdegree_std.append (0)
-        else:
-            degree_absnum.append           (len(degree_absvalues))
-            speed_per_absdegree.append     (np.mean(degree_absvalues))
-            speed_per_absdegree_std.append (2*np.std(degree_absvalues))  
-    # plot histogram of values as mean +/- std
-    axs0.errorbar(  x=np.arange(0,30,1),
-                    y=speed_per_absdegree,
-                    yerr=speed_per_absdegree_std,
-
-                    color='black',
-                    ecolor='black',
-
-                    capsize=2, 
-                    capthick=1,
-                    elinewidth=1,
-                    markeredgewidth=1,
-
-                    fmt='x',
-                    label='Mean Speed [1° int] ±2s'
-                    )
-    # format axis
-    axs0.set_xlabel('Gradient (degrees)')
-    axs0.set_ylabel('velcoity (km/hr)')
-    axs0.set_xlim([-2,40])
-    axs0.set_ylim([-0.25,5])
-    # plot best polynomial best fit
-    # print equation
-    from sympy import Symbol,expand
-    model = np.poly1d(np.polyfit(all_gradient, all_speed, 3))
-    axs0.plot(np.arange(0,90,2), model(np.arange(0,90,2)), 'Orange',
-                    label = 'best fit: a=%5.6f, b=%5.6f, c=%5.6f, d=%5.6f' % tuple(model))
-
-    # plot RIGHT
+    # plot
     axs1.scatter(all_slope,all_speed)
     # turn all values into histogram
     speed_per_degree        = []
@@ -286,11 +232,9 @@ def walk_slope_model(ouput_folder,time_interval):
 
     print(str(len(all_speed)), time_interval, round(coefficient_of_dermination,3), popt)
 
-    # set legends for LEFT and RIGHT
-    axs0.legend(fontsize=8,loc='upper right',frameon=False)
+    # set legends
     axs1.legend(fontsize=8,loc='upper right',frameon=False)
     # annotate plots
-    axs0.annotate('No. points= '+str(len(all_speed)),xy=(40,4))
     axs1.annotate('No. points= '+str(len(all_speed)),xy=(20,4))
     axs1.annotate('R2= '+str(round(coefficient_of_dermination,3)),xy=(20,3.75))
     # save plots
@@ -298,12 +242,14 @@ def walk_slope_model(ouput_folder,time_interval):
     plt.savefig(ouput_folder+str(time_interval)+'.pdf')
     plt.close("all")
 
+walk_slope_model('_output/',120,)
+
 # run for each sampling interval
 # from 10 second to 300 seconds at 10 second gaps
-for secs in reversed(range(10,305,10)):
+'''for secs in reversed(range(10,305,10)):
     walk_slope_model(
         '_output/_traverse walkspeed/',
         secs,
-                    )
+                    )'''
 
 exit()
