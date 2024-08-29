@@ -23,9 +23,9 @@ No installation is required. Scripts are short and designed to be adapted and ap
 **_traverse walkspeed-slope modelling.py** 
 Calculates slope for GPS location fixes within a recorded traverse and plots this as historgram. Fits a generalised version of [Toblers Hiking function](https://en.wikipedia.org/wiki/Tobler%27s_hiking_function) (THF) to model how walking velocity varies with slope. 
 
-<img src="https://github.com/ag00dwin/EVA_traversetime/blob/main/_output/_traverse%20walkspeed-slope%20modelling_plot.png" width="400">
+<img src="https://github.com/ag00dwin/EVA_traversetime/blob/main/_output/120.png" width="400">
 
 **_traverse dijkstra paths.py** 
 Runs a path-finding algorithm on the DEM raster weighted to travel time, estimated using a [Toblers Hiking function](https://en.wikipedia.org/wiki/Tobler%27s_hiking_function) (THF) model. By inputting the starting (A) and finishing (B) locations for a one-way route, the most time-optmial path will be generated as well as a heatmap (with or without contours) for time to reach all accessible grid pixels on the DEM. The code used for dijkstra’s algorithm upon an adjacency matrix (the DEM raster) is from an [article](https://judecapachietti.medium.com/dijkstras-algorithm-for-adjacency-matrix-in-python-a0966d7093e8) by Jude Capachietti. 
 
-<img src="https://github.com/ag00dwin/EVA_traversetime/blob/main/_output/da_map_(100%2C%20371)_plot%20annotations.png" width="400">
+<img src="https://github.com/ag00dwin/EVA_traversetime/blob/main/_output/(170054%2C%20708814)_contour.png" width="400">
